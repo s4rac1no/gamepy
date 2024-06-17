@@ -1,4 +1,4 @@
-#Indice
+##Indice
 
 1. [Introduzione](#1-introfuzione)
 2. [Struttura del progetto](#2-struttura-del-progetto)
@@ -37,7 +37,7 @@ Digitare infine i seguenti comandi:
   |-----------------------------|-----------------------------|
   | `$ venv\Scripts\activate`   | `$ source venv/bin/activate`|
 
-- $ pip install -r requirements.txt
+- `$ pip install -r requirements.txt`
   
 **N.B.** Per gli utenti che utilizzano **macOS**, per risolvere il problema presentato all'avvio del file sorgente useKB.py, 
 `atom_chars/2, problem caused by pyswip`, procedere con l'installazione manuale della libreria _pyswip_ digitanto questo
