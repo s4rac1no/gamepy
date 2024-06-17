@@ -1,4 +1,4 @@
-##Indice
+## Indice
 
 1. [Introduzione](#1-introfuzione)
 2. [Struttura del progetto](#2-struttura-del-progetto)
