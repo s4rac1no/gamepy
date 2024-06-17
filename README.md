@@ -21,7 +21,7 @@ Per eseguire il progetto è necessario installare le seguenti componenti:
 - `Python 3.9.*` -> https://www.python.org/downloads/
 - `Prolog 8.2.4` -> https://www.swi-prolog.org/download/stable?show=all
 
-Si è scelto la versione 8.2.4 di Prolog perché questa è risultata la più stabile per l'utilizzo in python con la librerie `pyswip`, inoltre è risultata efficiente per i dispositivi Windows e macOS. 
+Si è scelto la versione 8.2.4 di Prolog perché questa è risultata la più stabile per l'utilizzo in python con la libreria `pyswip`, inoltre è risultata efficiente per i dispositivi Windows e macOS. 
 
 Per l'avvio del progetto seguire i seguenti passaggi:
 
