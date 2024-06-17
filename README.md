@@ -30,9 +30,11 @@ Per l'avvio del progetto seguire i seguenti passaggi:
 
 Digitare infine i seguenti comandi:
 
-- `$ python -m venv venv`      
-
-- |  Windows                    | Macos                       |
+- `$ python -m venv venv`
+  
+- Attivare l'ambiente virtuale:
+  
+  |  Windows                    | Macos                       |
   |-----------------------------|-----------------------------|
   | `$ venv\Scripts\activate`   | `$ source venv/bin/activate`|
 
