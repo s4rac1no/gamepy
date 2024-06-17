@@ -1,17 +1,25 @@
+#Indice
+
+1. [Introduzione](#1-introfuzione)
+2. [Struttura del progetto](#2-struttura-del-progetto)
+3. [Requisiti per eseguire il progetto](#3-requisiti-per-eseguire-il-progetto)
+
+## 1. Introduzione
+
 Il progetto è stato creato da:
 
 - Saracino Lorenzo
 - Rosmarino Fabrizio
 
-**Struttura del progetto**
+## 2. Struttura del progetto
 
 
-**Requisiti per eseguire il progetto:**
+## 3. Requisiti per eseguire il progetto
 
 Per eseguire il progetto è necessario installare le seguenti componenti:
 
-- <p> Python 3.9.* </p>
-- <p> Prolog 8.2.4 </p>
+- `Python 3.9.*`
+- `Prolog 8.2.4`
 
 Si è scelto la versione 8.2.4 di Prolog perché questa è risultata la più stabile per l'utilizzo in python con la librerie <p> pyswip </p>, 
 inoltre è risultata efficiente per i dispositivi Windows e macOS. 
@@ -23,19 +31,19 @@ Per l'avvio del progetto seguire i seguenti passaggi:
 
 Digitare infine i seguenti comandi:
 
-- $ <p> python -m venv venv </P>       
+- `$ python -m venv venv`      
 
-- |  Windows                                 | Macos                                    |
-  |------------------------------------------|------------------------------------------|
-  | $ <p> venv\Scripts\activate </p>         | $ <p> source venv/bin/activate </p>      |
+- |  Windows                    | Macos                       |
+  |-----------------------------|-----------------------------|
+  | `$ venv\Scripts\activate`   | `$ source venv/bin/activate`|
 
 - $ pip install -r requirements.txt
   
 **N.B.** Per gli utenti che utilizzano **macOS**, per risolvere il problema presentato all'avvio del file sorgente useKB.py, 
-<p> atom_chars/2, problem caused by pyswip </p>, procedere con l'installazione manuale della libreria _pyswip_ digitanto questo
+`atom_chars/2, problem caused by pyswip`, procedere con l'installazione manuale della libreria _pyswip_ digitanto questo
 comando nel terminale, nella direcotory del progetto:
 
-- <p> pip install git+https://github.com/yuce/pyswip@master#egg=pyswip </p>
+- `pip install git+https://github.com/yuce/pyswip@master#egg=pyswip`
 
 _Questo installerà l'ultima versione di pyswip che ha risolto il problema su Mac._
 
