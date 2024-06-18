@@ -105,6 +105,10 @@ def simulated_annealing(dataset, max_iter=1000, temp=1000, alpha=0.99):
 def scrivi_game_with_constraints(file, game_with_constraints):
     game_with_constraints.to_csv(file, index=False)
 
+# Scrittura del dataset ottimizzato da Simulated Annealing in un file CSV separato
+def scrivi_simulated_annealing_results(file, game_with_constraints):
+    game_with_constraints.to_csv(file, index=False)
+
 # Funzione principale con menu e test delle prestazioni
 def main():
     dataset = leggi_dataset('../datasets/games-data-with-success.csv')
@@ -129,8 +133,10 @@ def main():
 
             if scelta == '1':
                 game_with_constraints_ottimizzato = random_walk(dataset)
+                scrivi_game_with_constraints('../results/random_walk_game_with_constraints.csv', game_with_constraints_ottimizzato)
             elif scelta == '2':
                 game_with_constraints_ottimizzato = simulated_annealing(dataset)
+                scrivi_simulated_annealing_results('../results/simulated_annealing_game_with_constraints.csv', game_with_constraints_ottimizzato)
             else:
                 print("Scelta non valida. Riprova.")
                 continue
@@ -147,7 +153,6 @@ def main():
         print(f"Media del tempo di esecuzione: {media_tempo:.4f} secondi")
         print(f"Media delle violazioni dei vincoli: {media_violazioni:.2f}")
 
-        scrivi_game_with_constraints('../results/game_with_constraints.csv', game_with_constraints_ottimizzato)
         verifica_vincoli_soddisfatti(game_with_constraints_ottimizzato)
 
 # Esecuzione del programma principale
