@@ -129,6 +129,37 @@ def query_top_games_by_developer(prolog):
     for result in results:
         print(result["Nome"])
 
+# Funzione per cercare giochi per tipo di modalità di gioco
+def query_games_by_mode(prolog):
+    modes = ["singleplayer", "multiplayer", "co-op mode", "no mode"]
+
+    print("Modalità di gioco disponibili:")
+    for mode in modes:
+        print(mode)
+
+    mode_choice = input("Inserisci la modalità di gioco desiderata: ").strip().lower()
+
+    if mode_choice not in modes:
+        print(f"Modalità di gioco '{mode_choice}' non disponibile.")
+        return
+
+    mode_query = f"gioco_modalita(Nome, '{mode_choice}')"
+    print(f"Giochi di tipo '{mode_choice}':")
+
+    # Recupera tutti i risultati della query
+    results = list(prolog.query(mode_query))
+
+    # Se non ci sono risultati, stampa un messaggio e ritorna
+    if not results:
+        print(f"Nessun gioco trovato per la modalità '{mode_choice}'.")
+        return
+
+    # Ottiene fino a 10 risultati casuali
+    random_results = random.sample(results, min(10, len(results)))
+
+    for result in random_results:
+        print(result["Nome"])
+
 # Funzione principale per gestire il menu e le query
 def query_kb():
     if not check_swi_prolog_installation():
@@ -143,7 +174,8 @@ def query_kb():
         print("1. Mostra 10 giochi di un genere scelto")
         print("2. Mostra 10 giochi con maggiore successo a partire da un certo anno")
         print("3. Mostra 5 migliori giochi di un developer scelto")
-        print("4. Esci")
+        print("4. Mostra 10 giochi di una modalità di gioco scelta")
+        print("5. Esci")
 
         choice = input("Scegli un'opzione: ")
 
@@ -154,6 +186,8 @@ def query_kb():
         elif choice == '3':
             query_top_games_by_developer(prolog)
         elif choice == '4':
+            query_games_by_mode(prolog)
+        elif choice == '5':
             print("Uscita...")
             break
         else:

@@ -1,6 +1,6 @@
 import pandas as pd
 import re
-
+from mapping_modes import classify_game_mode
 def normalize_game_name(name):
     # Sostituisci gli apostrofi con underscore
     name = name.replace("'", "_")
@@ -29,6 +29,7 @@ def csv_to_prolog(csv_filename, prolog_filename):
     # Set per tracciare i fatti già scritti
     facts_written = set()
     developers_written = set()  # Set per tracciare i developer già scritti
+    modes_written = set()  # Set per tracciare le modalità già scritte
 
     # Apri il file Prolog in modalità scrittura
     with open(prolog_filename, 'w', encoding='utf-8') as prologfile:
@@ -74,5 +75,18 @@ def csv_to_prolog(csv_filename, prolog_filename):
                 prologfile.write(f"gioco_developer('{fact[0]}', '{fact[1]}').\n")
                 developers_written.add(fact)
 
+         # Scrivi i fatti per le modalità di gioco
+        prologfile.write('\n% Modalità di gioco\n\n')
+        for index, row in df.iterrows():
+            nome_gioco = normalize_game_name(row['name'])
+            mode = row['players']  # Estrai la modalità di gioco
+            if pd.notna(mode):  # Verifica se la modalità non è NaN
+                mode = mode.strip()  # Pulisci la modalità di gioco
+                classified_mode = classify_game_mode(mode)
+                fact = (nome_gioco.strip(), classified_mode)
+                if fact not in modes_written:
+                    prologfile.write(f"gioco_modalita('{fact[0]}', '{fact[1]}').\n")
+                    modes_written.add(fact)
+
 if __name__ == '__main__':
-    csv_to_prolog('..\\datasets\\games-data.csv', 'games_kb.pl')
+    csv_to_prolog('../datasets/games-data.csv', 'games_kb.pl')
