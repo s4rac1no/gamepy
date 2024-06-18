@@ -17,7 +17,7 @@ modes = [
 
 def classify_game_mode(mode):
     singleplayer_modes = ['1 Player', '1-2 ', 'No online Multiplayer']
-    co_op_modes = ['1-2 ']
+    co_op_modes = ['1-2']
     game_no_mode = ['No info']
     if mode in singleplayer_modes:
         return 'singleplayer'
