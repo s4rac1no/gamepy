@@ -1,8 +1,42 @@
 import os
+import pandas as pd
 from pyswip import Prolog
 import random
+import re
+from createKB import normalize_developer_name
 
-# Funzione per verificare se SWI-Prolog è installato correttamente
+# Funzione per normalizzare il nome del gioco
+def normalize_game_name(name):
+    name = name.replace("'", "_")
+    name = re.sub(r'[.:]', '-', name)
+    return name
+
+# Funzione per pulire il genere
+def clean_genre(genre):
+    if "'" in genre:
+        genre = genre.replace("'", "")
+    return genre.strip()
+
+# Funzione per estrarre l'anno dalla data di rilascio
+def extract_year_from_r_date(r_date):
+    match = re.search(r'\d{4}$', r_date)
+    return int(match.group()) if match else None
+
+# Funzione per assegnare pesi ai generi
+def assign_genre_weight(genre):
+    genre_weights = {
+        'action': 1,
+        'adventure': 1,
+        'action adventure': 2,
+        'strategy': 0.50,
+        'simulation': 0.40,
+        'role-playing': 0.70,
+        'sports': 0.90,
+        'racing': 0.50
+    }
+    return genre_weights.get(genre.lower(), 0.20)
+
+# Funzione per verificare l'installazione di SWI-Prolog
 def check_swi_prolog_installation():
     print("Verifica dell'installazione di SWI-Prolog...")
     try:
@@ -34,7 +68,6 @@ def query_genre(prolog):
 
     genre_choice = input("Inserisci il genere desiderato: ").strip().lower()
 
-    # Normalizzazione degli input per evitare problemi di maiuscole/minuscole
     normalized_genres = {genre.lower(): genre for genre in genres}
 
     if genre_choice not in normalized_genres:
@@ -45,19 +78,12 @@ def query_genre(prolog):
     genre_query = f"gioco_generi(Nome, '{normalized_genre_choice}')"
     print(f"Giochi del genere '{normalized_genre_choice}':")
 
-    # Recupera tutti i risultati della query
     results = list(prolog.query(genre_query))
 
-    # Se non ci sono risultati, stampa un messaggio e ritorna al menù
     if not results:
         print(f"Nessun gioco trovato per il genere '{normalized_genre_choice}'.")
         return
 
-    # Messaggio di avviso se meno di 10 giochi
-    if len(results) < 10:
-        print(f"Attenzione: trovati solo {len(results)} giochi per il genere '{normalized_genre_choice}'.")
-
-    # Ottiene fino a 10 risultati casuali
     random_results = random.sample(results, min(10, len(results)))
 
     for result in random_results:
@@ -74,15 +100,12 @@ def query_top_games_by_year(prolog):
         year_query = f"gioco_top_score(Nome, Anno), Anno >= {year}"
         print(f"Giochi con maggiore successo e anno di uscita >= {year} :")
 
-        # Recupera tutti i risultati della query
         results = list(prolog.query(year_query))
 
-        # Se non ci sono risultati, stampa un messaggio e ritorna
         if not results:
             print("Nessun gioco trovato per questo anno.")
             return
 
-        # Ottiene fino a 10 risultati casuali
         random_results = random.sample(results, min(10, len(results)))
 
         for result in random_results:
@@ -101,7 +124,6 @@ def query_top_games_by_developer(prolog):
 
     developer_choice = input("Inserisci il developer desiderato: ").strip().lower()
 
-    # Normalizzazione degli input per evitare problemi di maiuscole/minuscole
     normalized_developers = {dev.lower(): dev for dev in developers}
 
     if developer_choice not in normalized_developers:
@@ -112,19 +134,12 @@ def query_top_games_by_developer(prolog):
     dev_query = f"gioco_developer(Nome, '{normalized_dev_choice}')"
     print(f"Ecco i 5 migliori giochi del developer '{normalized_dev_choice}':")
 
-    # Recupera tutti i risultati della query
     results = list(prolog.query(dev_query))
 
-    # Se non ci sono risultati, stampa un messaggio e ritorna
     if not results:
         print(f"Nessun gioco trovato per il developer '{normalized_dev_choice}'.")
         return
 
-    # Messaggio di avviso se meno di 5 giochi
-    if len(results) < 5:
-        print(f"Attenzione: trovati solo {len(results)} top giochi per il developer '{normalized_dev_choice}'.")
-
-    # Mostra tutti i giochi trovati per quel developer
     print("Elenco giochi:")
     for result in results:
         print(result["Nome"])
@@ -146,19 +161,64 @@ def query_games_by_mode(prolog):
     mode_query = f"gioco_modalita(Nome, '{mode_choice}')"
     print(f"Giochi di tipo '{mode_choice}':")
 
-    # Recupera tutti i risultati della query
     results = list(prolog.query(mode_query))
 
-    # Se non ci sono risultati, stampa un messaggio e ritorna
     if not results:
         print(f"Nessun gioco trovato per la modalità '{mode_choice}'.")
         return
 
-    # Ottiene fino a 10 risultati casuali
     random_results = random.sample(results, min(10, len(results)))
 
     for result in random_results:
         print(result["Nome"])
+
+# Funzione per cercare giochi che potrebbero essere di tendenza basati sui pesi dei generi
+def query_games_by_genre_weight(prolog, dataset_filename):
+    try:
+        trend_query = "gioco_peso_generi(Nome, Peso), Peso >= 0.5"
+        print("Giochi che potrebbero essere di tendenza:")
+
+        results = list(prolog.query(trend_query))
+
+        if not results:
+            print("Nessun gioco trovato che potrebbe essere di tendenza.")
+            return
+
+        random_results = random.sample(results, min(5, len(results)))
+
+        for result in random_results:
+            print(result["Nome"])
+
+    except Exception as e:
+        print(f"Errore durante la query dei giochi di tendenza: {e}")
+
+# Funzione per ottenere i giochi di tendenza di un developer dalla base di conoscenza
+def get_trending_games_by_developer(prolog, developer_name):
+    dev_query = f"game_developer_fact(Nome, '{developer_name}')"
+    results = list(prolog.query(dev_query))
+    return [result["Nome"] for result in results]
+
+# Funzione per eseguire la query 6
+def top_game_developers(prolog):
+    try:
+        trending_developers_df = pd.read_csv('../datasets/trending_developers_playlist.csv')
+
+        top_trending_developers = trending_developers_df.head(5)['Developer'].tolist()
+
+        print("Ecco i 5 developer di tendenza e i loro giochi di tendenza:")
+        for developer in top_trending_developers:
+            print(f"\nDeveloper: {developer}")
+            trending_games = get_trending_games_by_developer(prolog, developer)
+
+            if not trending_games:
+                print("Nessun gioco di tendenza trovato per questo developer.")
+            else:
+                print("Giochi di tendenza:")
+                for game in trending_games[:5]:
+                    print(game)
+
+    except Exception as e:
+        print(f"Errore durante l'esecuzione della query: {e}")
 
 # Funzione principale per gestire il menu e le query
 def query_kb():
@@ -169,13 +229,17 @@ def query_kb():
     prolog = Prolog()
     prolog.consult("games_kb.pl")
 
+    dataset_filename = '../datasets/games-data_KB.csv'
+
     while True:
         print("\nMenu:")
         print("1. Mostra 10 giochi di un genere scelto")
         print("2. Mostra 10 giochi con maggiore successo a partire da un certo anno")
         print("3. Mostra 5 migliori giochi di un developer scelto")
         print("4. Mostra 10 giochi di una modalità di gioco scelta")
-        print("5. Esci")
+        print("5. Mostra 5 giochi che potrebbero essere di tendenza")
+        print("6. Mostra alcuni giochi di un developer di tendenza")
+        print("7. Esci")
 
         choice = input("Scegli un'opzione: ")
 
@@ -188,6 +252,10 @@ def query_kb():
         elif choice == '4':
             query_games_by_mode(prolog)
         elif choice == '5':
+            query_games_by_genre_weight(prolog, dataset_filename)
+        elif choice == '6':
+            top_game_developers(prolog)
+        elif choice == '7':
             print("Uscita...")
             break
         else:
