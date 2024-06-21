@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold, learning_curve
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
@@ -51,21 +51,36 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-# Funzione per addestrare e valutare il modello
-def train_and_evaluate_model(model):
-    model.fit(X_train, y_train)
+# Funzione per addestrare e valutare il modello con cross-validation
+def train_and_evaluate_model_cv(model, X, y, cv=5):
+    # Definiamo il metodo di cross-validation
+    cv_method = StratifiedKFold(n_splits=cv, shuffle=True, random_state=42)
+
+    # Eseguiamo la cross-validation
+    cv_scores = cross_val_score(model, X, y, cv=cv_method, scoring='accuracy')
+
+    # Addestriamo il modello sui dati di training completi
+    model.fit(X, y)
+
+    # Valutazione sul set di test
     y_pred = model.predict(X_test)
     y_pred_prob = model.predict_proba(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     report = classification_report(y_test, y_pred, target_names=["gioco non di successo", "gioco di successo"])
-    return accuracy, report, model, y_pred, y_pred_prob
+
+    return cv_scores, accuracy, report, model, y_pred, y_pred_prob
 
 # Funzione per stampare i risultati del modello
-def print_results(model_name, accuracy, report, model, X_test, y_test, y_pred, y_pred_prob):
+def print_results_cv(model_name, cv_scores, accuracy, report, model, X_test, y_test, y_pred, y_pred_prob):
     print(f"\nRisultati del modello {model_name}:")
-    print(f"\nAccuracy: {accuracy}")
+    print(f"\nCross-Validation Scores: {cv_scores}")
+    print(f"Mean CV Accuracy: {cv_scores.mean()}")
     print("\nClassification Report:")
     print(report)
+    print("Risultati della Cross-Validation:")
+    print(f"Standard Deviation CV Accuracy: {cv_scores.std()}")
+    print(f"\nAccuracy on Test Set: {accuracy}")
+
 
     # Precisione sul set di addestramento
     train_accuracy = model.score(X_train, y_train)
@@ -111,6 +126,29 @@ def print_results(model_name, accuracy, report, model, X_test, y_test, y_pred, y
     plt.legend(loc="lower right")
     plt.show()
 
+# Funzione per tracciare la curva di apprendimento
+def plot_learning_curve(model, model_name, X, y):
+    train_sizes, train_scores, test_scores = learning_curve(model, X, y, cv=5, n_jobs=-1, train_sizes=np.linspace(0.1, 1.0, 10))
+
+    train_mean = np.mean(train_scores, axis=1)
+    train_std = np.std(train_scores, axis=1)
+    test_mean = np.mean(test_scores, axis=1)
+    test_std = np.std(test_scores, axis=1)
+
+    plt.figure(figsize=(10, 7))
+    plt.plot(train_sizes, train_mean, 'o-', color='r', label='Training score')
+    plt.plot(train_sizes, test_mean, 'o-', color='g', label='Cross-validation score')
+
+    plt.fill_between(train_sizes, train_mean - train_std, train_mean + train_std, color='r', alpha=0.1)
+    plt.fill_between(train_sizes, test_mean - test_std, test_mean + test_std, color='g', alpha=0.1)
+
+    plt.title(f'Learning Curve for {model_name}')
+    plt.xlabel('Training size')
+    plt.ylabel('Score')
+    plt.legend(loc='best')
+    plt.grid()
+    plt.show()
+
 # Menu per scegliere il modello
 def main():
     while True:
@@ -133,8 +171,9 @@ def main():
             print("\nSCELTA NON VALIDA. RIPROVA")
             continue
 
-        accuracy, report, trained_model, y_pred, y_pred_prob = train_and_evaluate_model(model)
-        print_results(model_name, accuracy, report, trained_model, X_test, y_test, y_pred, y_pred_prob)
+        cv_scores, accuracy, report, trained_model, y_pred, y_pred_prob = train_and_evaluate_model_cv(model, X_train, y_train)
+        print_results_cv(model_name, cv_scores, accuracy, report, trained_model, X_test, y_test, y_pred, y_pred_prob)
+        plot_learning_curve(trained_model, model_name, X_train, y_train)
 
 # Metodo per stampare le voci del menù
 def printMenu():
