@@ -84,7 +84,7 @@ plt.ylabel('Inertia')
 plt.title('Curva a Gomito per la determinazione del numero ottimale di cluster')
 plt.show()
 
-# Determinazione del numero ottimale di cluster (esempio: 3 cluster)
+# Determinazione del numero ottimale di cluster ricati dalla regola del gomito
 optimal_k = 3
 
 # Creazione della pipeline con il numero ottimale di cluster
@@ -99,6 +99,28 @@ pipeline.fit(data)
 # Predizione dei cluster
 data['cluster'] = pipeline['kmeans'].labels_
 
+# Calcolo delle distanze dal centro del cluster
+# Recupero dei centri dei cluster
+centroids = pipeline.named_steps['kmeans'].cluster_centers_
+
+# Trasformazione dei dati
+transformed_data = pipeline.named_steps['preprocessor'].transform(data)
+
+# Calcolo della distanza euclidea da ciascun centro di cluster
+distances = np.min(np.linalg.norm(transformed_data[:, np.newaxis] - centroids, axis=2), axis=1)
+
+# Aggiunta delle distanze al dataframe
+data['distance_from_centroid'] = distances
+
+# Determinazione della soglia per le anomalie (95° percentile)
+threshold = np.percentile(distances, 95)
+
+# Identificazione delle anomalie
+anomalies = data[distances > threshold]
+
+# Salvataggio delle anomalie in un file CSV
+anomalies.to_csv('../results/anomalies.csv', index=False)
+
 # Visualizzazione della distribuzione dei cluster
 print(data['cluster'].value_counts())
 
@@ -110,3 +132,6 @@ plt.xlabel('Score')
 plt.ylabel('Players')
 plt.legend(title='Platform')
 plt.show()
+
+print(f'Numero di anomalie identificate: {len(anomalies)}')
+print('Le anomalie sono state salvate nel file anomalies.csv nella directory results.')
