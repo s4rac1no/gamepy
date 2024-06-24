@@ -1,11 +1,11 @@
-name,platform,r-date,score,user score,developer,genre,players,critics,users,success
-Fishing Resort,Wii,"November 22, 2011",69,7.1,Prope,"Sports,Individual,Nature,Fishing,Fishing",No info,9,7,0
-Jagged Alliance 2: Unfinished Business,PC,"November 30, 2000",64,7.6,Sir-TechSoftwareInc.,"Strategy,Turn-Based,Modern,Tactics",1 Player,20,52,0
-MS Saga: A New Dawn,PlayStation2,"February 21, 2006",65,7.7,Bandai,"Role-Playing,General",1 Player,27,18,0
-Yo-kai Watch 2: Bony Spirits,3DS,"September 30, 2016",72,7.7,Level5,"Role-Playing,Trainer",2 ,32,55,0
-Midway Arcade Treasures 3,GameCube,"October 26, 2005",65,7.0,Midway,"Miscellaneous,Compilation",1-4 ,16,4,0
-Dynasty Warriors 8: Xtreme Legends Complete Edition,PlayStation4,"March 25, 2014",69,7.1,OmegaForce,"Action,Miscellaneous,Beat-'Em-Up,Compilation,3D",2 ,30,138,0
-Aliens Versus Predator 2: Primal Hunt Expansion Pack,PC,"August 13, 2002",55,7.5,ThirdLawInteractive,"Action,Shooter,Shooter,First-Person,Sci-Fi,Sci-Fi,Arcade",1-16 ,16,29,0
-Subject 13,PC,"May 28, 2015",59,6.5,PaulCuisset,"Adventure,General",No Online Multiplayer,11,14,0
-Devil May Cry 2,Switch,"September 19, 2019",50,8.0,Capcom,"Action Adventure,Linear",No Online Multiplayer,8,62,0
-Mercenaries,Xbox,"January 10, 2005",86,8.7,PandemicStudios,"Action Adventure,Modern",1 Player,65,56,0
+name,platform,r-date,score,user score,developer,genre,players,critics,users,trending_game,genre_count,success
+Microsoft Flight Simulator X,PC,"October 17, 2006",80,7.2,MicrosoftGameStudios,"Simulation,Flight,Modern Jet,Modern Jet,Combat",32  Online,28,132,0,4,0
+One Piece: Pirate Warriors 3 - Deluxe Edition,Switch,"May 10, 2018",76,8.1,KoeiTecmoGames,"Action,Beat-'Em-Up,3D",2 ,16,29,0,3,0
+Heroes of Hammerwatch - Ultimate Edition,Switch,"July 29, 2020",85,7.3,Crackshell,"Role-Playing,Action RPG",Up to 4 ,7,7,0,2,0
+Adventure Time: Finn and Jake Investigations,XboxOne,"October 20, 2015",66,5.5,ViciousCycle,"Adventure,3D,Third-Person",No info,9,11,0,3,0
+MVP 07 NCAA Baseball,PlayStation2,"February 6, 2007",76,8.4,EACanada,"Sports,Traditional,Baseball,Sim",4  Online,25,15,0,4,0
+Operation Babel: New Tokyo Legacy,PlayStationVita,"May 16, 2017",63,4.3,ExperienceInc.,"Role-Playing,Roguelike,Western-Style",No info,12,6,0,3,0
+Brain Age: Concentration Training,3DS,"February 10, 2013",69,7.3,Nintendo,"Edutainment,Miscellaneous,Edutainment",No info,21,25,0,2,0
+Darksiders II: Deathinitive Edition,PlayStation4,"October 30, 2015",72,7.3,GunfireGames,"Action Adventure,Open-World",No Online Multiplayer,28,213,1,2,1
+Pathway,PC,"April 11, 2019",68,6.4,Robotality,"Strategy,Turn-Based,Tactics",No Online Multiplayer,15,24,0,3,0
+Brothers: A Tale of Two Sons,PC,"September 3, 2013",90,8.5,Starbreeze,"Action Adventure,Fantasy,Fantasy,Linear",No Online Multiplayer,9,1460,1,2,1

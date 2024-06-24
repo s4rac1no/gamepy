@@ -111,7 +111,7 @@ def scrivi_simulated_annealing_results(file, game_with_constraints):
 
 # Funzione principale con menu e test delle prestazioni
 def main():
-    dataset = leggi_dataset('../datasets/games-data-with-success.csv')
+    dataset = leggi_dataset('../datasets/games-data_KB.csv')
 
     while True:
         print("Scegli un metodo di ottimizzazione:")

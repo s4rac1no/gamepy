@@ -1,36 +1,22 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold, learning_curve
+from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold, learning_curve, GridSearchCV
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_curve, auc
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_curve, auc, average_precision_score
+from scipy.stats import gmean
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Carichiamo il dataset
-df = pd.read_csv('../datasets/games-data.csv')
+df = pd.read_csv('../datasets/games-data_KB.csv')
 
 # Pulizia dei dati: rimuoviamo eventuali valori mancanti nelle colonne selezionate
 df.dropna(subset=['user score', 'genre', 'critics', 'users'], inplace=True)
 
-# Gestione dei valori non numerici nella colonna 'user score'
-df['user score'] = df['user score'].replace('tbd', np.nan).astype(float)
-df['user score'] = df['user score'].fillna(df['user score'].mean())
-
-# Definiamo i criteri per il successo
-def is_success(row):
-    if row['score'] >= 70 and row['user score'] >= 7.0 and (row['critics'] + row['users']) >= 200:
-        return 1
-    else:
-        return 0
-
-# Aggiungiamo la colonna 'success' basata sui criteri definiti
-df['success'] = df.apply(is_success, axis=1)
-
-# Salva i risultati nel database indicato
-df.to_csv('../datasets/games-data-with-success.csv', index=False)
 
 # Codifica delle variabili categoriali
 label_encoders = {}
@@ -40,7 +26,7 @@ for column in ['genre']:
     label_encoders[column] = le
 
 # Separiamo le caratteristiche (features) dall'etichetta (target)
-X = df[['user score', 'genre', 'critics', 'users']]
+X = df[['user score', 'critics', 'score', 'users']]
 y = df['success']
 
 # Dividiamo i dati in training e test set
@@ -50,81 +36,6 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
-
-# Funzione per addestrare e valutare il modello con cross-validation
-def train_and_evaluate_model_cv(model, X, y, cv=5):
-    # Definiamo il metodo di cross-validation
-    cv_method = StratifiedKFold(n_splits=cv, shuffle=True, random_state=42)
-
-    # Eseguiamo la cross-validation
-    cv_scores = cross_val_score(model, X, y, cv=cv_method, scoring='accuracy')
-
-    # Addestriamo il modello sui dati di training completi
-    model.fit(X, y)
-
-    # Valutazione sul set di test
-    y_pred = model.predict(X_test)
-    y_pred_prob = model.predict_proba(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    report = classification_report(y_test, y_pred, target_names=["gioco non di successo", "gioco di successo"])
-
-    return cv_scores, accuracy, report, model, y_pred, y_pred_prob
-
-# Funzione per stampare i risultati del modello
-def print_results_cv(model_name, cv_scores, accuracy, report, model, X_test, y_test, y_pred, y_pred_prob):
-    print(f"\nRisultati del modello {model_name}:")
-    print(f"\nCross-Validation Scores: {cv_scores}")
-    print(f"Mean CV Accuracy: {cv_scores.mean()}")
-    print("\nClassification Report:")
-    print(report)
-    print("Risultati della Cross-Validation:")
-    print(f"Standard Deviation CV Accuracy: {cv_scores.std()}")
-    print(f"\nAccuracy on Test Set: {accuracy}")
-
-
-    # Precisione sul set di addestramento
-    train_accuracy = model.score(X_train, y_train)
-    print(f"Training Accuracy: {train_accuracy}")
-
-    # Precisione sul set di test
-    test_accuracy = model.score(X_test, y_test)
-    print(f"Test Accuracy: {test_accuracy}")
-
-    # Importanza delle caratteristiche, solo se disponibile
-    if hasattr(model, 'feature_importances_'):
-        importances = model.feature_importances_
-        features = X.columns
-        importance_df = pd.DataFrame({'Feature': features, 'Importance': importances}).sort_values(by='Importance', ascending=False)
-        print("\nFeature Importances:")
-        print(importance_df)
-    else:
-        print("\nIl modello selezionato non supporta l'estrazione delle importanze delle caratteristiche.")
-
-    # Matrice di confusione
-    conf_matrix = confusion_matrix(y_test, y_pred)
-    print("\nConfusion Matrix:")
-    print(conf_matrix)
-    plt.figure(figsize=(10, 7))
-    sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=["Non di successo", "Di successo"], yticklabels=["Non di successo", "Di successo"])
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    plt.title(f'Confusion Matrix for {model_name}')
-    plt.show()
-
-    # Curva ROC
-    fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob[:, 1])
-    roc_auc = auc(fpr, tpr)
-    print(f"\nArea Under the ROC Curve (AUC): {roc_auc}")
-    plt.figure()
-    plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (area = {roc_auc:0.2f})')
-    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title(f'Receiver Operating Characteristic (ROC) Curve for {model_name}')
-    plt.legend(loc="lower right")
-    plt.show()
 
 # Funzione per tracciare la curva di apprendimento
 def plot_learning_curve(model, model_name, X, y):
@@ -147,42 +58,187 @@ def plot_learning_curve(model, model_name, X, y):
     plt.ylabel('Score')
     plt.legend(loc='best')
     plt.grid()
+    plt.savefig(f'../img/Apprendimento_supervisionato/{model_name} - learningCurve.png')
     plt.show()
 
-# Menu per scegliere il modello
+# Funzione per calcolare la GMAP
+def calculate_gmap(y_true, y_pred_prob):
+    # Calcola l'Average Precision per ogni classe
+    ap_per_class = []
+    for i in range(y_pred_prob.shape[1]):
+        ap = average_precision_score(y_true == i, y_pred_prob[:, i])
+        ap_per_class.append(ap)
+    # Calcola la GMAP come media geometrica delle AP per classe
+    gmap = gmean(ap_per_class)
+    return gmap
+# Funzione per addestrare e valutare il modello con cross-validation e GridSearchCV
+def train_and_evaluate_model_grid_search(model, param_grid, X_train, y_train, X_test, y_test, model_name):
+    # Definiamo il metodo di cross-validation
+    cv_method = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+    # GridSearchCV per ricerca dei parametri ottimali
+    grid_search = GridSearchCV(estimator=model, param_grid=param_grid, cv=cv_method, scoring='accuracy', n_jobs=-1)
+    grid_search.fit(X_train, y_train)
+
+    # Calcola la GMAP per ciascun fold della cross-validation
+    gmap_scores = []
+    for train_index, test_index in cv_method.split(X_train, y_train):
+        X_train_fold, X_val_fold = X_train[train_index], X_train[test_index]  # Accedi direttamente usando gli indici
+        y_train_fold, y_val_fold = y_train.iloc[train_index], y_train.iloc[test_index]  # Assicurati di mantenere y_train come DataFrame
+
+        model.fit(X_train_fold, y_train_fold)
+        y_pred_prob = model.predict_proba(X_val_fold)
+        gmap = calculate_gmap(y_val_fold, y_pred_prob)
+        gmap_scores.append(gmap)
+
+    mean_gmap = np.mean(gmap_scores)
+    std_gmap = np.std(gmap_scores)
+
+    # Valutazione del modello ottimizzato sul set di test
+    y_pred = grid_search.predict(X_test)
+    y_pred_prob = grid_search.predict_proba(X_test)
+    cv_scores = cross_val_score(grid_search.best_estimator_, X_train, y_train, cv=cv_method, scoring='accuracy')
+
+    # Stampa dei risultati
+    print_results_cv(model_name, cv_scores, accuracy_score(y_test, y_pred), classification_report(y_test, y_pred, target_names=["gioco non di successo", "gioco di successo"]), grid_search.best_estimator_, X_test, y_test, y_pred, y_pred_prob, mean_gmap, std_gmap)
+
+    # Tracciamento della curva di apprendimento
+    plot_learning_curve(grid_search.best_estimator_, model_name, X_train, y_train)
+
+    # Salva il grafico della curva ROC
+    plt.figure()
+    fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob[:, 1])
+    roc_auc = auc(fpr, tpr)
+    plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (area = {roc_auc:0.2f})')
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title(f'Receiver Operating Characteristic (ROC) Curve for {model_name}')
+    plt.legend(loc="lower right")
+    plt.grid()
+    plt.savefig(f'../img/Apprendimento_supervisionato/{model_name} - ROC.png')
+    plt.show()
+
+    # Stampiamo i parametri ottimizzati
+    print(f"\nParametri ottimizzati per {model_name}:")
+    print(grid_search.best_params_)
+
+# Funzione per stampare i risultati del modello
+def print_results_cv(model_name, cv_scores, accuracy, report, model, X_test, y_test, y_pred, y_pred_prob, mean_gmap, std_gmap):
+    print(f"\nRisultati del modello {model_name}:")
+    print(f"\nCross-Validation Scores: {cv_scores}")
+    print(f"Mean CV Accuracy: {cv_scores.mean()}")
+    print("\nClassification Report:")
+    print(report)
+    print("Risultati della Cross-Validation:")
+    print(f"Standard Deviation CV Accuracy: {cv_scores.std()}")
+    print(f"\nAccuracy on Test Set: {accuracy}")
+
+    # Precisione sul set di addestramento
+    train_accuracy = model.score(X_train, y_train)
+    print(f"Training Accuracy: {train_accuracy}")
+
+    # Precisione sul set di test
+    test_accuracy = model.score(X_test, y_test)
+    print(f"Test Accuracy: {test_accuracy}")
+
+    # Stampiamo la GMAP media e deviazione standard
+    print(f"\nGeometric Mean Average Precision (GMAP): {mean_gmap} (± {std_gmap})")
+
+    # Importanza delle caratteristiche, solo se disponibile
+    if hasattr(model, 'feature_importances_'):
+        importances = model.feature_importances_
+        features = X.columns
+        importance_df = pd.DataFrame({'Feature': features, 'Importance': importances}).sort_values(by='Importance', ascending=False)
+        print("\nFeature Importances:")
+        print(importance_df)
+
+    # Matrice di confusione
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    print("\nConfusion Matrix:")
+    print(conf_matrix)
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=["Non di successo", "Di successo"], yticklabels=["Non di successo", "Di successo"])
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.title(f'Confusion Matrix for {model_name}')
+    plt.savefig(f'../img/Apprendimento_supervisionato/{model_name} - confusionMatrix.png')
+    plt.show()
+
 def main():
     while True:
         printMenu()
         choice = input("Inserisci il numero del modello scelto: ")
 
         if choice == '1':
-            model = KNeighborsClassifier(n_neighbors=3)
-            model_name = "K-Nearest Neighbors (KNN)"
+            # Random Forest con GridSearchCV
+            rf_param_grid = {
+                'n_estimators': [100, 200],
+                'max_depth': [10, 20, None],
+                'min_samples_split': [2, 5, 10],
+                'min_samples_leaf': [1, 2, 4]
+            }
+            rf_model = RandomForestClassifier(random_state=42)
+            train_and_evaluate_model_grid_search(rf_model, rf_param_grid, X_train, y_train, X_test, y_test, "Random Forest")
+
         elif choice == '2':
-            model = RandomForestClassifier(n_estimators=100, random_state=42)
-            model_name = "Random Forest"
+            # Support Vector Machine con GridSearchCV
+            svc_param_grid = {
+                'C': [0.1, 1, 10, 100],
+                'gamma': [1, 0.1, 0.01, 0.001],
+                'kernel': ['rbf']
+            }
+            svc_model = SVC(probability=True, random_state=42)
+            train_and_evaluate_model_grid_search(svc_model, svc_param_grid, X_train, y_train, X_test, y_test, "Support Vector Machine")
+
         elif choice == '3':
-            model = SVC(kernel='linear', probability=True)
-            model_name = "Support Vector Machine (SVM)"
+            # Decision Tree con GridSearchCV
+            dt_param_grid = {
+                'criterion': ['gini', 'entropy'],
+                'max_depth': [10, 20, None],
+                'min_samples_split': [2, 5, 10],
+                'min_samples_leaf': [1, 2, 4]
+            }
+            dt_model = DecisionTreeClassifier(random_state=42)
+            train_and_evaluate_model_grid_search(dt_model, dt_param_grid, X_train, y_train, X_test, y_test, "Decision Tree")
+
         elif choice == '4':
-            print("Uscita dal programma.")
+            # K-Nearest Neighbors con GridSearchCV
+            knn_param_grid = {
+                'n_neighbors': [3, 5, 7, 9],
+                'weights': ['uniform', 'distance'],
+                'metric': ['euclidean', 'manhattan']
+            }
+            knn_model = KNeighborsClassifier()
+            train_and_evaluate_model_grid_search(knn_model, knn_param_grid, X_train, y_train, X_test, y_test, "K-Nearest Neighbors")
+
+        elif choice == '5':
+            # Gradient Boosting Classifier con GridSearchCV
+            gb_param_grid = {
+                'n_estimators': [100, 200],
+                'learning_rate': [0.01, 0.1, 0.05],
+                'max_depth': [3, 4, 5]
+            }
+            gb_model = GradientBoostingClassifier(random_state=42)
+            train_and_evaluate_model_grid_search(gb_model, gb_param_grid, X_train, y_train, X_test, y_test, "Gradient Boosting Classifier")
+
+        elif choice == '0':
+            print("Uscita...")
             break
+
         else:
-            print("\nSCELTA NON VALIDA. RIPROVA")
-            continue
+            print("Scelta non valida. Per favore, riprova.")
 
-        cv_scores, accuracy, report, trained_model, y_pred, y_pred_prob = train_and_evaluate_model_cv(model, X_train, y_train)
-        print_results_cv(model_name, cv_scores, accuracy, report, trained_model, X_test, y_test, y_pred, y_pred_prob)
-        plot_learning_curve(trained_model, model_name, X_train, y_train)
-
-# Metodo per stampare le voci del menù
 def printMenu():
-    print("\nScegli il modello da utilizzare:")
-    print("1. K-Nearest Neighbors (KNN)")
-    print("2. Random Forest")
-    print("3. Support Vector Machine (SVM)")
-    print("4. Per uscire")
+    print("\nModelli di Machine Learning:")
+    print("1. Random Forest")
+    print("2. Support Vector Machine")
+    print("3. Decision Tree")
+    print("4. K-Nearest Neighbors")
+    print("5. Gradient Boosting Classifier")
+    print("0. Exit")
 
-# Esegui il menu principale all'avvio
 if __name__ == "__main__":
     main()

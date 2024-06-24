@@ -13,10 +13,6 @@ data = pd.read_csv('../datasets/games-data.csv')
 # Verifica e gestione dei valori mancanti
 data = data.dropna()
 
-# Rimozione del testo non numerico e conversione in float per la colonna "players"
-data['players'] = data['players'].str.replace(r'\D', '', regex=True)
-data['players'] = pd.to_numeric(data['players'], errors='coerce')
-
 # Eliminazione delle righe con valori mancanti nella colonna 'players'
 data = data.dropna(subset=['players'])
 
@@ -34,10 +30,13 @@ allowed_platforms = ['PC', 'Xbox', 'PlayStation', 'Nintendo']
 data = data[data['platform'].isin(allowed_platforms)]
 
 # Selezione delle colonne da utilizzare
-data = data[['platform', 'score', 'players']]
+data = data[['name', 'platform', 'score', 'users']]
+
+# Prendi un campione casuale del 30% del dataset
+#data_sample = data.sample(frac=0.3, random_state=42)
 
 # Separazione delle caratteristiche numeriche e categoriche
-numerical_features = ['score', 'players']
+numerical_features = ['score', 'users']
 categorical_features = ['platform']
 
 # Pipeline per la trasformazione delle variabili categoriche
@@ -71,7 +70,7 @@ for k in k_range:
     ])
 
     # Adattamento della pipeline ai dati
-    pipeline.fit(data)
+    pipeline.fit(data[['platform', 'score', 'users']])
 
     # Recupero del valore di inertia e aggiunta alla lista
     inertia.append(pipeline.named_steps['kmeans'].inertia_)
@@ -84,7 +83,7 @@ plt.ylabel('Inertia')
 plt.title('Curva a Gomito per la determinazione del numero ottimale di cluster')
 plt.show()
 
-# Determinazione del numero ottimale di cluster ricati dalla regola del gomito
+# Determinazione del numero ottimale di cluster ricavati dalla regola del gomito
 optimal_k = 3
 
 # Creazione della pipeline con il numero ottimale di cluster
@@ -94,7 +93,7 @@ pipeline = Pipeline(steps=[
 ])
 
 # Adattamento della pipeline ai dati
-pipeline.fit(data)
+pipeline.fit(data[['platform', 'score', 'users']])
 
 # Predizione dei cluster
 data['cluster'] = pipeline['kmeans'].labels_
@@ -104,7 +103,7 @@ data['cluster'] = pipeline['kmeans'].labels_
 centroids = pipeline.named_steps['kmeans'].cluster_centers_
 
 # Trasformazione dei dati
-transformed_data = pipeline.named_steps['preprocessor'].transform(data)
+transformed_data = pipeline.named_steps['preprocessor'].transform(data[['platform', 'score', 'users']])
 
 # Calcolo della distanza euclidea da ciascun centro di cluster
 distances = np.min(np.linalg.norm(transformed_data[:, np.newaxis] - centroids, axis=2), axis=1)
@@ -124,13 +123,15 @@ anomalies.to_csv('../results/anomalies.csv', index=False)
 # Visualizzazione della distribuzione dei cluster
 print(data['cluster'].value_counts())
 
-# Plotting
-plt.figure(figsize=(10, 6))
-sns.scatterplot(data=data, x='score', y='players', hue='cluster', style='platform', palette='Set1')
-plt.title('K-means Clustering dei Videogiochi (score vs players)')
-plt.xlabel('Score')
-plt.ylabel('Players')
+# Plotting migliorato con scala logaritmica sull'asse x
+plt.figure(figsize=(12, 8))
+sns.scatterplot(data=data, x='users', y='score', hue='cluster', style='platform', palette='Set1', s=100)
+plt.xscale('log')
+plt.title('K-means Clustering dei Videogiochi (users vs score)', fontsize=16)
+plt.xlabel('Users', fontsize=14)
+plt.ylabel('Score', fontsize=14)
 plt.legend(title='Platform')
+plt.grid(True, which="both", ls="--")
 plt.show()
 
 print(f'Numero di anomalie identificate: {len(anomalies)}')

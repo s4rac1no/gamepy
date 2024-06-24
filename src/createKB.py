@@ -1,7 +1,9 @@
+import numpy as np
 import pandas as pd
 import re
 from collections import Counter
 from mapping_modes import classify_game_mode
+
 
 # Funzione per normalizzare il nome del gioco
 def normalize_name(name):
@@ -69,6 +71,9 @@ def csv_to_prolog(csv_filename, prolog_filename, output_csv_filename, output_dev
     # Dizionario per tenere traccia dei pesi dei generi per ogni gioco
     game_genre_weights = {}
 
+    # Dizionario per tenere traccia del numero di generi per ogni gioco
+    game_genre_counts = {}
+
     # Apri il file Prolog in modalità scrittura
     with open(prolog_filename, 'w', encoding='utf-8') as prologfile:
         # Scrivi l'intestazione nel file Prolog
@@ -87,6 +92,10 @@ def csv_to_prolog(csv_filename, prolog_filename, output_csv_filename, output_dev
                 # Calcola il peso totale dei generi per il gioco e aggiorna il dizionario
                 total_weight = sum(assign_genre_weight(genere.lower()) for genere in unique_genres)
                 game_genre_weights[nome_gioco] = total_weight
+
+                # Calcola il numero di generi per il gioco e aggiorna il dizionario
+                genre_count = len(unique_genres)
+                game_genre_counts[nome_gioco] = genre_count
 
                 # Scrivi i fatti Prolog per ogni genere unico del gioco se non è già stato scritto
                 for genere in unique_genres:
@@ -160,6 +169,19 @@ def csv_to_prolog(csv_filename, prolog_filename, output_csv_filename, output_dev
     # Aggiungi la colonna trending_game al DataFrame originale e salva il CSV aggiornato
     df['trending_game'] = df['name'].apply(lambda x: 1 if game_genre_weights.get(normalize_name(x), 0) >= 2 else 0)
 
+    # Aggiungi la colonna genre_count al DataFrame originale
+    df['genre_count'] = df['name'].apply(lambda x: game_genre_counts.get(normalize_name(x), 0))
+
+        # Gestione dei valori non numerici nella colonna 'user score'
+    df['user score'] = df['user score'].replace('tbd', np.nan).astype(float)
+    df['user score'] = df['user score'].fillna(df['user score'].mean())
+
+    # Calcola la colonna "success"
+    df['success'] = df.apply(
+        lambda row: 1 if row['score'] >= 70 and row['user score'] >= 7.0 and (row['critics'] + row['users']) >= 200 else 0,
+        axis=1
+    )
+
     # Filtra i developer dei giochi di tendenza e normalizza i nomi
     trending_developers = df[df['trending_game'] == 1]['developer'].apply(normalize_developer_name).tolist()
 
@@ -176,6 +198,9 @@ def csv_to_prolog(csv_filename, prolog_filename, output_csv_filename, output_dev
     developer_playlist_df.to_csv(output_developer_playlist, index=False)
 
     print("\n\nLa playlist dei top developer è stata salvata in /datasets/trending_developers_playlist.csv ")
+
+    # Salva il DataFrame aggiornato con la colonna genre_count in un nuovo CSV
+    df.to_csv(output_csv_filename, index=False)
 
 # Esegui la funzione principale se il file è eseguito come script principale
 if __name__ == '__main__':
