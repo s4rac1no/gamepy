@@ -81,6 +81,7 @@ plt.plot(k_range, inertia, marker='o')
 plt.xlabel('Numero di cluster (K)')
 plt.ylabel('Inertia')
 plt.title('Curva a Gomito per la determinazione del numero ottimale di cluster')
+plt.savefig('../img/Apprendimento_non_supervisionato/gomito_curva.png')
 plt.show()
 
 # Determinazione del numero ottimale di cluster ricavati dalla regola del gomito
@@ -132,6 +133,7 @@ plt.xlabel('Users', fontsize=14)
 plt.ylabel('Score', fontsize=14)
 plt.legend(title='Platform')
 plt.grid(True, which="both", ls="--")
+plt.savefig('../img/Apprendimento_non_supervisionato/K-means_cluster.png')
 plt.show()
 
 print(f'Numero di anomalie identificate: {len(anomalies)}')

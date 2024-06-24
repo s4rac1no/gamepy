@@ -71,6 +71,8 @@ def calculate_gmap(y_true, y_pred_prob):
     # Calcola la GMAP come media geometrica delle AP per classe
     gmap = gmean(ap_per_class)
     return gmap
+
+
 # Funzione per addestrare e valutare il modello con cross-validation e GridSearchCV
 def train_and_evaluate_model_grid_search(model, param_grid, X_train, y_train, X_test, y_test, model_name):
     # Definiamo il metodo di cross-validation
@@ -128,11 +130,11 @@ def train_and_evaluate_model_grid_search(model, param_grid, X_train, y_train, X_
 # Funzione per stampare i risultati del modello
 def print_results_cv(model_name, cv_scores, accuracy, report, model, X_test, y_test, y_pred, y_pred_prob, mean_gmap, std_gmap):
     print(f"\nRisultati del modello {model_name}:")
-    print(f"\nCross-Validation Scores: {cv_scores}")
-    print(f"Mean CV Accuracy: {cv_scores.mean()}")
     print("\nClassification Report:")
     print(report)
     print("Risultati della Cross-Validation:")
+    print(f"\nCross-Validation Scores: {cv_scores}")
+    print(f"Mean CV Accuracy: {cv_scores.mean()}")  # Media delle accuratezze
     print(f"Standard Deviation CV Accuracy: {cv_scores.std()}")
     print(f"\nAccuracy on Test Set: {accuracy}")
 
@@ -147,13 +149,13 @@ def print_results_cv(model_name, cv_scores, accuracy, report, model, X_test, y_t
     # Stampiamo la GMAP media e deviazione standard
     print(f"\nGeometric Mean Average Precision (GMAP): {mean_gmap} (± {std_gmap})")
 
-    # Importanza delle caratteristiche, solo se disponibile
-    if hasattr(model, 'feature_importances_'):
-        importances = model.feature_importances_
-        features = X.columns
-        importance_df = pd.DataFrame({'Feature': features, 'Importance': importances}).sort_values(by='Importance', ascending=False)
-        print("\nFeature Importances:")
-        print(importance_df)
+    if model_name == 'Support Vector Machine' or model_name == 'Gradient Boosting Classifier' or DecisionTreeClassifier:
+        if hasattr(model, 'feature_importances_'):
+            importances = model.feature_importances_
+            features = X.columns
+            importance_df = pd.DataFrame({'Feature': features, 'Importance': importances}).sort_values(by='Importance', ascending=False)
+            print("\nFeature Importances:")
+            print(importance_df)
 
     # Matrice di confusione
     conf_matrix = confusion_matrix(y_test, y_pred)
@@ -168,70 +170,75 @@ def print_results_cv(model_name, cv_scores, accuracy, report, model, X_test, y_t
     plt.show()
 
 def main():
-    while True:
-        printMenu()
-        choice = input("Inserisci il numero del modello scelto: ")
 
-        if choice == '1':
-            # Random Forest con GridSearchCV
-            rf_param_grid = {
-                'n_estimators': [100, 200],
-                'max_depth': [10, 20, None],
-                'min_samples_split': [2, 5, 10],
-                'min_samples_leaf': [1, 2, 4]
-            }
-            rf_model = RandomForestClassifier(random_state=42)
-            train_and_evaluate_model_grid_search(rf_model, rf_param_grid, X_train, y_train, X_test, y_test, "Random Forest")
+    try:
+        while True:
+            printMenu()
+            choice = input("Inserisci il numero del modello scelto: ")
 
-        elif choice == '2':
-            # Support Vector Machine con GridSearchCV
-            svc_param_grid = {
-                'C': [0.1, 1, 10, 100],
-                'gamma': [1, 0.1, 0.01, 0.001],
-                'kernel': ['rbf']
-            }
-            svc_model = SVC(probability=True, random_state=42)
-            train_and_evaluate_model_grid_search(svc_model, svc_param_grid, X_train, y_train, X_test, y_test, "Support Vector Machine")
+            if choice == '1':
+                # Random Forest con GridSearchCV
+                rf_param_grid = {
+                    'n_estimators': [100, 200, 300],
+                    'max_depth': [10, 20, None],
+                    'min_samples_split': [2, 5, 10],
+                    'min_samples_leaf': [1, 2, 4]
+                }
+                rf_model = RandomForestClassifier(random_state=42)
+                train_and_evaluate_model_grid_search(rf_model, rf_param_grid, X_train, y_train, X_test, y_test, "Random Forest")
 
-        elif choice == '3':
-            # Decision Tree con GridSearchCV
-            dt_param_grid = {
-                'criterion': ['gini', 'entropy'],
-                'max_depth': [10, 20, None],
-                'min_samples_split': [2, 5, 10],
-                'min_samples_leaf': [1, 2, 4]
-            }
-            dt_model = DecisionTreeClassifier(random_state=42)
-            train_and_evaluate_model_grid_search(dt_model, dt_param_grid, X_train, y_train, X_test, y_test, "Decision Tree")
+            elif choice == '2':
+                # Support Vector Machine con GridSearchCV
+                svc_param_grid = {
+                    'C': [0.1, 1, 10, 100],
+                    'gamma': [1, 0.1, 0.01, 0.001],
+                    'kernel': ['rbf']
+                }
+                svc_model = SVC(probability=True, random_state=42)
+                train_and_evaluate_model_grid_search(svc_model, svc_param_grid, X_train, y_train, X_test, y_test, "Support Vector Machine")
 
-        elif choice == '4':
-            # K-Nearest Neighbors con GridSearchCV
-            knn_param_grid = {
-                'n_neighbors': [3, 5, 7, 9],
-                'weights': ['uniform', 'distance'],
-                'metric': ['euclidean', 'manhattan']
-            }
-            knn_model = KNeighborsClassifier()
-            train_and_evaluate_model_grid_search(knn_model, knn_param_grid, X_train, y_train, X_test, y_test, "K-Nearest Neighbors")
+            elif choice == '3':
+                # Decision Tree con GridSearchCV
+                dt_param_grid = {
+                    'criterion': ['gini', 'entropy'],
+                    'max_depth': [10, 20, None],
+                    'min_samples_split': [2, 5, 10],
+                    'min_samples_leaf': [1, 2, 4]
+                }
+                dt_model = DecisionTreeClassifier(random_state=42)
+                train_and_evaluate_model_grid_search(dt_model, dt_param_grid, X_train, y_train, X_test, y_test, "Decision Tree")
 
-        elif choice == '5':
-            # Gradient Boosting Classifier con GridSearchCV
-            gb_param_grid = {
-                'n_estimators': [100, 200],
-                'learning_rate': [0.01, 0.1, 0.05],
-                'max_depth': [3, 4, 5]
-            }
-            gb_model = GradientBoostingClassifier(random_state=42)
-            train_and_evaluate_model_grid_search(gb_model, gb_param_grid, X_train, y_train, X_test, y_test, "Gradient Boosting Classifier")
+            elif choice == '4':
+                # K-Nearest Neighbors con GridSearchCV
+                knn_param_grid = {
+                    'n_neighbors': [3, 5, 7, 9],
+                    'weights': ['uniform', 'distance'],
+                    'metric': ['euclidean', 'manhattan']
+                }
+                knn_model = KNeighborsClassifier()
+                train_and_evaluate_model_grid_search(knn_model, knn_param_grid, X_train, y_train, X_test, y_test, "K-Nearest Neighbors")
 
-        elif choice == '0':
-            print("Uscita...")
-            break
+            elif choice == '5':
+                # Gradient Boosting Classifier con GridSearchCV
+                gb_param_grid = {
+                    'n_estimators': [100, 200],
+                    'learning_rate': [0.01, 0.1, 0.05],
+                    'max_depth': [3, 4, 5]
+                }
+                gb_model = GradientBoostingClassifier(random_state=42)
+                train_and_evaluate_model_grid_search(gb_model, gb_param_grid, X_train, y_train, X_test, y_test, "Gradient Boosting Classifier")
 
-        else:
-            print("Scelta non valida. Per favore, riprova.")
+            elif choice == '0':
+                print("Uscita...")
+                break
+
+            else:
+                print("Scelta non valida. Per favore, riprova.")
+    except KeyboardInterrupt:
+        print("\nEsecuzione interrotta.")
 
 def printMenu():
+
     print("\nModelli di Machine Learning:")
     print("1. Random Forest")
     print("2. Support Vector Machine")
@@ -239,6 +246,7 @@ def printMenu():
     print("4. K-Nearest Neighbors")
     print("5. Gradient Boosting Classifier")
     print("0. Exit")
+
 
 if __name__ == "__main__":
     main()

@@ -230,36 +230,38 @@ def query_kb():
     prolog.consult("games_kb.pl")
 
     dataset_filename = '../datasets/games-data_KB.csv'
+    try:
+        while True:
+            print("\nMenu:")
+            print("1. Mostra 10 giochi di un genere scelto")
+            print("2. Mostra 10 giochi con maggiore successo a partire da un certo anno")
+            print("3. Mostra 5 migliori giochi di un developer scelto")
+            print("4. Mostra 10 giochi di una modalità di gioco scelta")
+            print("5. Mostra 5 giochi che potrebbero essere di tendenza")
+            print("6. Mostra alcuni giochi di un developer di tendenza")
+            print("7. Esci")
 
-    while True:
-        print("\nMenu:")
-        print("1. Mostra 10 giochi di un genere scelto")
-        print("2. Mostra 10 giochi con maggiore successo a partire da un certo anno")
-        print("3. Mostra 5 migliori giochi di un developer scelto")
-        print("4. Mostra 10 giochi di una modalità di gioco scelta")
-        print("5. Mostra 5 giochi che potrebbero essere di tendenza")
-        print("6. Mostra alcuni giochi di un developer di tendenza")
-        print("7. Esci")
+            choice = input("Scegli un'opzione: ")
 
-        choice = input("Scegli un'opzione: ")
-
-        if choice == '1':
-            query_genre(prolog)
-        elif choice == '2':
-            query_top_games_by_year(prolog)
-        elif choice == '3':
-            query_top_games_by_developer(prolog)
-        elif choice == '4':
-            query_games_by_mode(prolog)
-        elif choice == '5':
-            query_games_by_genre_weight(prolog, dataset_filename)
-        elif choice == '6':
-            top_game_developers(prolog)
-        elif choice == '7':
-            print("Uscita...")
-            break
-        else:
-            print("Scelta non valida. Riprova.")
+            if choice == '1':
+                query_genre(prolog)
+            elif choice == '2':
+                query_top_games_by_year(prolog)
+            elif choice == '3':
+                query_top_games_by_developer(prolog)
+            elif choice == '4':
+                query_games_by_mode(prolog)
+            elif choice == '5':
+                query_games_by_genre_weight(prolog, dataset_filename)
+            elif choice == '6':
+                top_game_developers(prolog)
+            elif choice == '7':
+                print("Uscita...")
+                break
+            else:
+                print("Scelta non valida. Riprova.")
+    except KeyboardInterrupt as e:
+        print("\n\nEsecuzione interrotta.", e)
 
 if __name__ == '__main__':
     query_kb()

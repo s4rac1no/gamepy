@@ -112,48 +112,51 @@ def scrivi_simulated_annealing_results(file, game_with_constraints):
 # Funzione principale con menu e test delle prestazioni
 def main():
     dataset = leggi_dataset('../datasets/games-data_KB.csv')
+    try:
+        while True:
+            print("Scegli un metodo di ottimizzazione:")
+            print("1. Random Walk")
+            print("2. Simulated Annealing")
+            print("3. Esci")
 
-    while True:
-        print("Scegli un metodo di ottimizzazione:")
-        print("1. Random Walk")
-        print("2. Simulated Annealing")
-        print("3. Esci")
+            scelta = input("Inserisci il numero della tua scelta: ")
 
-        scelta = input("Inserisci il numero della tua scelta: ")
+            if scelta == '3':
+                print("Uscita dal programma.")
+                break
 
-        if scelta == '3':
-            print("Uscita dal programma.")
-            break
+            risultati = []
+            tempi = []
 
-        risultati = []
-        tempi = []
+            for _ in range(10):  # Esegui ogni algoritmo 10 volte per ottenere una media delle prestazioni
+                start_time = time.time()
 
-        for _ in range(10):  # Esegui ogni algoritmo 10 volte per ottenere una media delle prestazioni
-            start_time = time.time()
+                if scelta == '1':
+                    game_with_constraints_ottimizzato = random_walk(dataset)
+                    scrivi_game_with_constraints('../results/random_walk_game_with_constraints.csv', game_with_constraints_ottimizzato)
+                elif scelta == '2':
+                    game_with_constraints_ottimizzato = simulated_annealing(dataset)
+                    scrivi_simulated_annealing_results('../results/simulated_annealing_game_with_constraints.csv', game_with_constraints_ottimizzato)
+                else:
+                    print("Scelta non valida. Riprova.")
+                    continue
 
-            if scelta == '1':
-                game_with_constraints_ottimizzato = random_walk(dataset)
-                scrivi_game_with_constraints('../results/random_walk_game_with_constraints.csv', game_with_constraints_ottimizzato)
-            elif scelta == '2':
-                game_with_constraints_ottimizzato = simulated_annealing(dataset)
-                scrivi_simulated_annealing_results('../results/simulated_annealing_game_with_constraints.csv', game_with_constraints_ottimizzato)
-            else:
-                print("Scelta non valida. Riprova.")
-                continue
+                end_time = time.time()
+                durata = end_time - start_time
+                tempi.append(durata)
+                violazioni = valuta_vincoli(game_with_constraints_ottimizzato)
+                risultati.append(violazioni)
 
-            end_time = time.time()
-            durata = end_time - start_time
-            tempi.append(durata)
-            violazioni = valuta_vincoli(game_with_constraints_ottimizzato)
-            risultati.append(violazioni)
+            media_tempo = np.mean(tempi)
+            media_violazioni = np.mean(risultati)
 
-        media_tempo = np.mean(tempi)
-        media_violazioni = np.mean(risultati)
+            print(f"Media del tempo di esecuzione: {media_tempo:.4f} secondi")
+            print(f"Media delle violazioni dei vincoli: {media_violazioni:.2f}")
 
-        print(f"Media del tempo di esecuzione: {media_tempo:.4f} secondi")
-        print(f"Media delle violazioni dei vincoli: {media_violazioni:.2f}")
+            verifica_vincoli_soddisfatti(game_with_constraints_ottimizzato)
 
-        verifica_vincoli_soddisfatti(game_with_constraints_ottimizzato)
+    except KeyboardInterrupt as e:
+        print("\n\nEsecuzione interrotta.", e)
 
 # Esecuzione del programma principale
 if __name__ == "__main__":
