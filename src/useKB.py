@@ -3,7 +3,7 @@ import pandas as pd
 from pyswip import Prolog
 import random
 import re
-from createKB import normalize_developer_name
+
 
 # Funzione per normalizzare il nome del gioco
 def normalize_game_name(name):
@@ -201,7 +201,7 @@ def get_trending_games_by_developer(prolog, developer_name):
 # Funzione per eseguire la query 6
 def top_game_developers(prolog):
     try:
-        trending_developers_df = pd.read_csv('../datasets/trending_developers_playlist.csv')
+        trending_developers_df = pd.read_csv('../results/trending_developers_playlist.csv')
 
         top_trending_developers = trending_developers_df.head(5)['Developer'].tolist()
 
@@ -219,6 +219,61 @@ def top_game_developers(prolog):
 
     except Exception as e:
         print(f"Errore durante l'esecuzione della query: {e}")
+
+# Funzione per generare una playlist di giochi rilassanti
+def query_relaxing_games(prolog):
+    relaxing_query = "gioco_rilassante(Nome)"
+    results = list(prolog.query(relaxing_query))
+
+    if not results:
+        print("Nessun gioco rilassante trovato.")
+        return
+
+    random_results = random.sample(results, min(10, len(results)))
+
+    playlist = [result['Nome'] for result in random_results]
+    df = pd.DataFrame(playlist, columns=["Giochi rilassanti"])
+    playlist_path = '../results/playlist_rilassanti.csv'
+    df.to_csv(playlist_path, index=False)
+
+    print(f"Playlist di giochi rilassanti salvata in {playlist_path}")
+
+# Funzione per generare una playlist di giochi intensi
+def query_intense_games(prolog):
+    intense_query = "gioco_intenso(Nome)"
+    results = list(prolog.query(intense_query))
+
+    if not results:
+        print("Nessun gioco intenso trovato.")
+        return
+
+    random_results = random.sample(results, min(10, len(results)))
+
+    playlist = [result['Nome'] for result in random_results]
+    df = pd.DataFrame(playlist, columns=["Giochi intensi"])
+    playlist_path = '../results/playlist_intensi.csv'
+    df.to_csv(playlist_path, index=False)
+
+    print(f"Playlist di giochi intensi salvata in {playlist_path}")
+
+# Funzione per generare una playlist di giochi cooperativi
+def query_coop_games(prolog):
+    coop_query = "gioco_cooperativo(Nome)"
+    results = list(prolog.query(coop_query))
+
+    if not results:
+        print("Nessun gioco cooperativo trovato.")
+        return
+
+    random_results = random.sample(results, min(10, len(results)))
+
+    playlist = [result['Nome'] for result in random_results]
+    df = pd.DataFrame(playlist, columns=["Giochi cooperativi"])
+    playlist_path = '../results/playlist_cooperativi.csv'
+    df.to_csv(playlist_path, index=False)
+
+    print(f"Playlist di giochi cooperativi salvata in {playlist_path}")
+
 
 # Funzione principale per gestire il menu e le query
 def query_kb():
@@ -239,7 +294,10 @@ def query_kb():
             print("4. Mostra 10 giochi di una modalità di gioco scelta")
             print("5. Mostra 5 giochi che potrebbero essere di tendenza")
             print("6. Mostra alcuni giochi di un developer di tendenza")
-            print("7. Esci")
+            print("7. Crea playlist 10 giochi rilassanti")
+            print("8. Crea playlist 10 giochi intensi")
+            print("9. Crea playlist 10 giochi cooperativi")
+            print("10. Esci")
 
             choice = input("Scegli un'opzione: ")
 
@@ -256,6 +314,12 @@ def query_kb():
             elif choice == '6':
                 top_game_developers(prolog)
             elif choice == '7':
+                query_relaxing_games(prolog)
+            elif choice == '8':
+                query_intense_games(prolog)
+            elif choice == '9':
+                query_coop_games(prolog)
+            elif choice == '10':
                 print("Uscita...")
                 break
             else:
@@ -265,3 +329,4 @@ def query_kb():
 
 if __name__ == '__main__':
     query_kb()
+

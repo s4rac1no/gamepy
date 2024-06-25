@@ -57,6 +57,23 @@ def assign_genre_weight(genre):
     }
     return genre_weights.get(genre.lower(), 0.20)  # Restanti generi con peso 0.20
 
+
+# Funzione per classificare i giochi rilassanti
+def is_relaxing_game(row):
+    return 'simulation' in row['genre'].lower() or 'adventure' in row['genre'].lower()
+
+# Funzione per classificare i giochi intensi
+def is_intense_game(row):
+    return 'action' in row['genre'].lower() or 'racing' in row['genre'].lower()
+
+# Funzione per classificare i giochi cooperativi
+def is_coop_game(row):
+    if pd.isna(row['players']):
+        return False
+    mode = row['players']
+    classified_mode = classify_game_mode(mode)
+    return 'multiplayer' in classified_mode.lower() or 'co-op' in classified_mode.lower()
+
 # Funzione principale per convertire un CSV in un file Prolog
 def csv_to_prolog(csv_filename, prolog_filename, output_csv_filename, output_developer_playlist):
     # Leggi il dataset CSV usando pandas
@@ -156,6 +173,37 @@ def csv_to_prolog(csv_filename, prolog_filename, output_csv_filename, output_dev
                 prologfile.write(f"{fact}.\n")
                 game_developer_facts_written.add(fact)
 
+        #fatti per i giochi rilassanti
+        prologfile.write('\n% Playlist di giochi rilassanti\n\n')
+        for index, row in df.iterrows():
+            if is_relaxing_game(row):
+                nome_gioco = normalize_name(row['name'])
+                fact = f"gioco_rilassante('{nome_gioco.strip()}')"
+                if fact not in facts_written:
+                    prologfile.write(f"{fact}.\n")
+                    facts_written.add(fact)
+
+        #fatti per i giochi intensi
+        prologfile.write('\n% Playlist di giochi intensi\n\n')
+        for index, row in df.iterrows():
+            if is_intense_game(row):
+                nome_gioco = normalize_name(row['name'])
+                fact = f"gioco_intenso('{nome_gioco.strip()}')"
+                if fact not in facts_written:
+                    prologfile.write(f"{fact}.\n")
+                    facts_written.add(fact)
+
+        #fatti per i giochi cooperativi
+        prologfile.write('\n% Playlist di giochi cooperativi\n\n')
+        for index, row in df.iterrows():
+            if is_coop_game(row):
+                nome_gioco = normalize_name(row['name'])
+                fact = f"gioco_cooperativo('{nome_gioco.strip()}')"
+                if fact not in facts_written:
+                    prologfile.write(f"{fact}.\n")
+                    facts_written.add(fact)
+
+
     # Aggiungi la regola per i pesi dei generi alla fine del file Prolog
     with open(prolog_filename, 'a', encoding='utf-8') as prologfile:
         prologfile.write('\n% Regole per i pesi dei generi\n\n')
@@ -197,11 +245,11 @@ def csv_to_prolog(csv_filename, prolog_filename, output_csv_filename, output_dev
     # Salva il DataFrame della playlist dei developer in un CSV
     developer_playlist_df.to_csv(output_developer_playlist, index=False)
 
-    print("\n\nLa playlist dei top developer è stata salvata in /datasets/trending_developers_playlist.csv ")
+    print("\n\nLa playlist dei top developer è stata salvata in /results/trending_developers_playlist.csv ")
 
     # Salva il DataFrame aggiornato con la colonna genre_count in un nuovo CSV
     df.to_csv(output_csv_filename, index=False)
 
 # Esegui la funzione principale se il file è eseguito come script principale
 if __name__ == '__main__':
-    csv_to_prolog('../datasets/games-data.csv', 'games_kb.pl', '../datasets/games-data_KB.csv', '../datasets/trending_developers_playlist.csv')
+    csv_to_prolog('../datasets/games-data.csv', 'games_kb.pl', '../datasets/games-data_KB.csv', '../results/trending_developers_playlist.csv')

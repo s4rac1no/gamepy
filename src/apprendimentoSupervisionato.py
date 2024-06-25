@@ -11,6 +11,7 @@ from scipy.stats import gmean
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 # Carichiamo il dataset
 df = pd.read_csv('../datasets/games-data_KB.csv')
 
@@ -72,7 +73,6 @@ def calculate_gmap(y_true, y_pred_prob):
     gmap = gmean(ap_per_class)
     return gmap
 
-
 # Funzione per addestrare e valutare il modello con cross-validation e GridSearchCV
 def train_and_evaluate_model_grid_search(model, param_grid, X_train, y_train, X_test, y_test, model_name):
     # Definiamo il metodo di cross-validation
@@ -101,6 +101,10 @@ def train_and_evaluate_model_grid_search(model, param_grid, X_train, y_train, X_
     y_pred_prob = grid_search.predict_proba(X_test)
     cv_scores = cross_val_score(grid_search.best_estimator_, X_train, y_train, cv=cv_method, scoring='accuracy')
 
+    # Salva le predizioni nel dataset originale
+    df['predicted_success'] = grid_search.predict(scaler.transform(X))  # Usa tutto il dataset per predire
+    df.to_csv(f'../predictions/{model_name}_predictions.csv', index=False)
+
     # Stampa dei risultati
     print_results_cv(model_name, cv_scores, accuracy_score(y_test, y_pred), classification_report(y_test, y_pred, target_names=["gioco non di successo", "gioco di successo"]), grid_search.best_estimator_, X_test, y_test, y_pred, y_pred_prob, mean_gmap, std_gmap)
 
@@ -123,7 +127,8 @@ def train_and_evaluate_model_grid_search(model, param_grid, X_train, y_train, X_
     plt.savefig(f'../img/Apprendimento_supervisionato/{model_name} - ROC.png')
     plt.show()
 
-    # Stampiamo i parametri ottimizzati
+
+# Stampiamo i parametri ottimizzati
     print(f"\nParametri ottimizzati per {model_name}:")
     print(grid_search.best_params_)
 
@@ -236,6 +241,7 @@ def main():
                 print("Scelta non valida. Per favore, riprova.")
     except KeyboardInterrupt:
         print("\nEsecuzione interrotta.")
+
 
 def printMenu():
 
