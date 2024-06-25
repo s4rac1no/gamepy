@@ -13,6 +13,36 @@ Il progetto è stato creato da:
 
 ## 2. Struttura del progetto
 
+|-- datasets
+|   |- games-data.csv
+|   |- games-data_KB.csv
+|-- img
+|   |-- Apprendimento_non_supervisionato
+|   |-- Apprendimento_non_supervisionato
+|   |-- CSP
+|   |-- immaginiDoc
+|-- results
+|   |- anomalies.csv
+|   |- playlist_cooperativi.csv
+|   |- playlist_intensi.csv
+|   |- playlist_rilassanti.csv
+|   |- random_walk_game_with_constraints.csv
+|   |- simulated_annealing_game_with_constraints.csv
+|   |- trending_developers_playlist.csv
+|-- src
+|   |- apprendimentoNonSupervisionato.py
+|   |- apprendimentoSupervsionato.py
+|   |- createKB.py
+|   |- games_kb.pl
+|   |- mapping_models.py
+|   |- soddisfazione_dei_vincoli.py
+|   |- useKB.py
+|- .gitignore
+|- DocumentazioneCasoDiStudio.pdf
+|- LICENSE
+|- README.md
+|- requirements.txt
+
 
 ## 3. Requisiti per eseguire il progetto
 
