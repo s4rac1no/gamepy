@@ -18,7 +18,6 @@ df = pd.read_csv('../datasets/games-data_KB.csv')
 # Pulizia dei dati: rimuoviamo eventuali valori mancanti nelle colonne selezionate
 df.dropna(subset=['user score', 'genre', 'critics', 'users'], inplace=True)
 
-
 # Codifica delle variabili categoriali
 label_encoders = {}
 for column in ['genre']:

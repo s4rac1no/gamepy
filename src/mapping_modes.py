@@ -30,6 +30,7 @@ def classify_game_mode(mode):
 
 
 # funzione utile per stampare le varie modalità dei giochi e creare la lista modes
+# (utile per lo sviluppo)
 def extract_and_print_game_modes(csv_filename):
     # Leggi il dataset CSV usando pandas
     df = pd.read_csv(csv_filename)

@@ -59,47 +59,80 @@ def valuta_vincoli(game_with_constraints):
 
 # Algoritmo di Random Walk
 def random_walk(dataset, max_iter=1000):
+    # Inizializzazione delle migliori soluzioni e delle violazioni
     best_game_with_constraints = None
     best_violazioni = float('inf')
+
+    # Iterazione per un massimo di 'max_iter' volte
     for _ in range(max_iter):
+        # Generazione di una nuova soluzione casuale campionando 10 elementi dal dataset
         game_with_constraints = dataset.sample(n=10)
+
+        # Valutazione delle violazioni dei vincoli nella soluzione corrente
         violazioni = valuta_vincoli(game_with_constraints)
+
+        # Confronto con la migliore soluzione trovata finora
         if violazioni < best_violazioni:
             best_game_with_constraints = game_with_constraints
             best_violazioni = violazioni
+
+        # Se non ci sono violazioni, interrompi il ciclo
         if violazioni == 0:
             break
+
+    # Restituzione della migliore soluzione trovata
     return best_game_with_constraints
+
 
 # Algoritmo di Simulated Annealing
 def simulated_annealing(dataset, max_iter=1000, temp=1000, alpha=0.99):
-    current_solution = dataset.sample(n=10)
+    # Inizializzazione della soluzione corrente campionando 10 elementi dal dataset senza duplicati
+    current_solution = dataset.sample(n=10).drop_duplicates()
+    # Verifica che la soluzione corrente contenga esattamente 10 elementi
+    while len(current_solution) < 10:
+        current_solution = dataset.sample(n=10).drop_duplicates()
+
+    # Valutazione delle violazioni dei vincoli nella soluzione corrente
     current_violations = valuta_vincoli(current_solution)
     best_solution = current_solution
     best_violations = current_violations
 
     for i in range(max_iter):
+        # Riduzione della temperatura ad ogni iterazione
         temp *= alpha
         if temp <= 0:
             break
 
-        new_solution = dataset.sample(n=10)
+        # Generazione di una nuova soluzione campionando 10 elementi dal dataset senza duplicati
+        new_solution = dataset.sample(n=10).drop_duplicates()
+        while len(new_solution) < 10:
+            new_solution = dataset.sample(n=10).drop_duplicates()
+
+        # Valutazione delle violazioni dei vincoli nella nuova soluzione
         new_violations = valuta_vincoli(new_solution)
 
+        # Calcolo della variazione nelle violazioni
         delta = new_violations - current_violations
 
+        # Condizioni di accettazione della nuova soluzione:
+        # Se la nuova soluzione è migliore (quindi ha meno violazioni), accettala
+        # Altrimenti, accettala con una probabilità che tiene conto della temperatura
         if delta < 0 or np.exp(-delta / temp) > random.random():
             current_solution = new_solution
             current_violations = new_violations
 
+            # Aggiornamento della migliore soluzione trovata
             if new_violations < best_violations:
                 best_solution = new_solution
                 best_violations = new_violations
 
+        # Se non ci sono violazioni, termina l'algoritmo
         if best_violations == 0:
             break
 
     return best_solution
+
+
 
 # Scrittura del dataset ottimizzato in un file CSV
 def scrivi_game_with_constraints(file, game_with_constraints):
