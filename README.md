@@ -13,6 +13,7 @@ Il progetto è stato creato da:
 
 ## 2. Struttura del progetto
 
+```plaintext
 |-- datasets
 |   |- games-data.csv
 |   |- games-data_KB.csv
@@ -42,7 +43,7 @@ Il progetto è stato creato da:
 |- LICENSE
 |- README.md
 |- requirements.txt
-
+```
 
 ## 3. Requisiti per eseguire il progetto
 
