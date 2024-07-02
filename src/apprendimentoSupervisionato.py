@@ -101,8 +101,8 @@ def train_and_evaluate_model_grid_search(model, param_grid, X_train, y_train, X_
     cv_scores = cross_val_score(grid_search.best_estimator_, X_train, y_train, cv=cv_method, scoring='accuracy')
 
     # Salva le predizioni nel dataset originale
-    df['predicted_success'] = grid_search.predict(scaler.transform(X))  # Usa tutto il dataset per predire
-    df.to_csv(f'../predictions/{model_name}_predictions.csv', index=False)
+    # df['predicted_success'] = grid_search.predict(scaler.transform(X))  # Usa tutto il dataset per predire
+    # df.to_csv(f'../predictions/{model_name}_predictions.csv', index=False)
 
     # Stampa dei risultati
     print_results_cv(model_name, cv_scores, accuracy_score(y_test, y_pred), classification_report(y_test, y_pred, target_names=["gioco non di successo", "gioco di successo"]), grid_search.best_estimator_, X_test, y_test, y_pred, y_pred_prob, mean_gmap, std_gmap)
